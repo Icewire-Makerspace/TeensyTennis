@@ -64,8 +64,6 @@ private:
 	void updatePhysics(float dt);
 
 	GameSettings settings;
-
-private:
 	Ball ball;
 	HorizontalWall horizontalWalls[NUM_HORIZONTAL_WALLS];
 	VerticalWall verticalWalls[NUM_VERTICAL_WALLS];
