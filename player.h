@@ -5,6 +5,7 @@
 
 class Player {
 public:
+	Player() : active(true) {}
 	void setup(Paddle* _paddle, float _movementSpeed);
 	const Paddle* getPaddle() const;
 	void update(float dt);

@@ -3,6 +3,11 @@
 
 const int PHYSICS_TO_PIXEL_RATIO = 20;
 const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 1120;
+
+inline float screenToPhysics(float p) {
+	return p / PHYSICS_TO_PIXEL_RATIO;
+}
 
 inline float physicsToScreen(float p) {
 	return p * PHYSICS_TO_PIXEL_RATIO;

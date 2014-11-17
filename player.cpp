@@ -1,7 +1,6 @@
 #include "player.h"
 
 void Player::setup(Paddle* _paddle, float _movementSpeed) {
-	active = true;
 	paddle = _paddle;
 	movementSpeed = _movementSpeed;
 }

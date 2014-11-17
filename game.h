@@ -34,15 +34,24 @@ struct GameSettings {
 
 };
 
+struct GameStats {
+	int leftScore;
+	int rightScore;
+	unsigned int tick;
+};
+
 class Game {
 public:
 	Game();
 	void setup(GameSettings _settings);
+	void resetPlayersAndBall();
 	void assignController(int playerNum, PlayerController* _controller);
+	bool winCondition();
 	void tick(float dt);
 	void activatePlayer(int num);
 	void deactivatePlayer(int num);
 	bool playerIsActive(int num);
+	const GameStats& getStats();
 
 	// For drawing
 	float XpositionOfHorizontalWall(int num);
@@ -64,6 +73,7 @@ private:
 	void updatePhysics(float dt);
 
 	GameSettings settings;
+	GameStats stats;
 	Ball ball;
 	HorizontalWall horizontalWalls[NUM_HORIZONTAL_WALLS];
 	VerticalWall verticalWalls[NUM_VERTICAL_WALLS];

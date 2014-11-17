@@ -1,5 +1,6 @@
 #include "game.h"
 #include "physics\Collision2d.h"
+#include "constants.h"
 
 Game::Game() {
 	for (int i = 0; i < NUM_PLAYERS; ++i) {
@@ -8,6 +9,12 @@ Game::Game() {
 }
 
 void Game::setup(GameSettings _settings) {
+	// Stats
+	stats.leftScore = 0;
+	stats.rightScore = 0;
+	stats.tick = 0;
+
+	// Settings
 	settings = _settings;
 
 	for (int i = 0; i < NUM_HORIZONTAL_WALLS; ++i) {
@@ -18,7 +25,19 @@ void Game::setup(GameSettings _settings) {
 		verticalWalls[i].setup(settings.verticalWallPoints[i], settings.verticalWallLengths[i]);
 	}
 
+	resetPlayersAndBall();
+}
+
+void Game::resetPlayersAndBall() {
 	ball.setup(settings.ballInitialPoint, settings.ballDiameter, settings.ballInitialVelocity);
+
+	// Randomize ball take-off
+	if (stats.tick && stats.tick % 2 == 0) {
+		ball.reverseVelocityX();
+	}
+	if (stats.tick && stats.tick % 3 == 0) {
+		ball.reverseVelocityY();
+	}
 
 	for (int i = 0; i < NUM_PLAYERS; ++i) {
 		paddles[i].setup(settings.playerInitialPoint[i], settings.playerLength[i], settings.playerHeight[i]);
@@ -30,8 +49,19 @@ void Game::assignController(int playerNum, PlayerController* _controller) {
 	controller[playerNum] = _controller;
 }
 
+bool Game::winCondition() {
+	if (ball.getPosition().x + ball.getRadius() < 0) {
+		++stats.leftScore;
+		return true;
+	} else if (ball.getPosition().x - ball.getRadius() > screenToPhysics(SCREEN_WIDTH)) {
+		++stats.rightScore;
+		return true;
+	}
+	return false;
+}
+
 void Game::tick(float dt) {
-	// todo end game condition and, hence, score
+	++stats.tick;
 	updatePlayers();
 	updatePhysics(dt * settings.speed);
 }
@@ -46,6 +76,10 @@ void Game::deactivatePlayer(int num) {
 
 bool Game::playerIsActive(int num) {
 	return player[num].active;
+}
+
+const GameStats& Game::getStats() {
+	return stats;
 }
 
 float Game::XpositionOfHorizontalWall(int num) {
@@ -144,7 +178,8 @@ void Game::updatePhysics(float dt) {
 						collision = true;
 
 						// This is a bug fix so that the ball will never collide with a paddle such that the collision position is around a wall
-						physics::vector2d pos(player[i].getPaddle()->getPosition().x, physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, ball.getPosition(), ball.getPhysicsObject()->extents).y);
+						//physics::vector2d pos(player[i].getPaddle()->getPosition().x, physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, ball.getPosition(), ball.getPhysicsObject()->extents).y); unnecessary
+						physics::vector2d pos(player[i].getPaddle()->getPosition().x, collisionPositionOfPaddle.y);
 						player[i].setPosition(pos);
 						player[i].stop();
 
@@ -205,7 +240,17 @@ void Game::updatePhysics(float dt) {
 					collision = true;
 
 					ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, verticalWalls[i].getPosition(), verticalWalls[i].getExtents()));
-					ball.reverseVelocityX();
+
+					if (ball.getPosition().x >= verticalWalls[i].getPosition().x) {
+						if (ball.getPhysicsObject()->velocity.x < 0) {
+							ball.reverseVelocityX();
+						}
+					} else {
+						if (ball.getPhysicsObject()->velocity.x > 0) {
+							ball.reverseVelocityX();
+						}
+					}
+					//ball.reverseVelocityX(); TMP remove
 
 					ballDt = ballDt * (1.0f - timeOfCollision);
 				}
@@ -217,7 +262,17 @@ void Game::updatePhysics(float dt) {
 					collision = true;
 
 					ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, horizontalWalls[i].getPosition(), horizontalWalls[i].getExtents()));
-					ball.reverseVelocityY();
+
+					if (ball.getPosition().y >= horizontalWalls[i].getPosition().y) {
+						if (ball.getPhysicsObject()->velocity.y < 0) {
+							ball.reverseVelocityY();
+						}
+					} else {
+						if (ball.getPhysicsObject()->velocity.y > 0) {
+							ball.reverseVelocityY();
+						}
+					}
+					//ball.reverseVelocityY(); TMP remove
 
 					ballDt = ballDt * (1.0f - timeOfCollision);
 				}
