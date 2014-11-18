@@ -1,7 +1,7 @@
 #ifndef PADDLE_H
 #define PADDLE_H
 
-#include "physics\Objects2d.h"
+#include "physics\objects2d.h"
 
 class Paddle {
 public:

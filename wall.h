@@ -1,7 +1,7 @@
 #ifndef WALL_H
 #define WALL_H
 
-#include "physics\Objects2d.h"
+#include "physics\objects2d.h"
 
 class HorizontalWall {
 public:

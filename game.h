@@ -6,11 +6,34 @@
 #include "paddle.h"
 #include "player.h"
 #include "controller.h"
-#include "physics\Math2d.h"
+#include "physics/math2d.h"
+#include "collision2d.h"
 
 #define NUM_HORIZONTAL_WALLS 2
 #define NUM_VERTICAL_WALLS 4
 #define NUM_PLAYERS 4
+
+struct GameUtility {
+	int screenWidth;
+	int screenHeight;
+	int physicsToPixelRatio;
+
+	float screenToPhysics(float p) const {
+		return p / physicsToPixelRatio;
+	}
+
+	float physicsToScreen(float p) const {
+		return p * physicsToPixelRatio;
+	}
+
+	float physicsToScreenX(float x) const {
+		return physicsToScreen(x);
+	}
+
+	float physicsToScreenY(float y) const {
+		return screenHeight - (physicsToScreen(y));
+	}
+};
 
 struct GameSettings {
 	// Bounds
@@ -42,7 +65,8 @@ struct GameStats {
 
 class Game {
 public:
-	Game();
+	//Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) : utility.screenWidth(_screenWidth), utility.screenHeight(_screenHeight), utility.physicsToPixelRatio(_physicsToPixelRatio) {}
+	Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio);
 	void setup(GameSettings _settings);
 	void resetPlayersAndBall();
 	void assignController(int playerNum, PlayerController* _controller);
@@ -52,6 +76,7 @@ public:
 	void deactivatePlayer(int num);
 	bool playerIsActive(int num);
 	const GameStats& getStats();
+	const GameUtility& getUtility();
 
 	// For drawing
 	float XpositionOfHorizontalWall(int num);
@@ -72,6 +97,7 @@ private:
 	void updatePlayers();
 	void updatePhysics(float dt);
 
+	GameUtility utility;
 	GameSettings settings;
 	GameStats stats;
 	Ball ball;

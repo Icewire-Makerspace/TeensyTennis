@@ -1,7 +1,7 @@
 #ifndef BALL_H
 #define BALL_H
 
-#include "physics\Objects2d.h"
+#include "physics\objects2d.h"
 
 class Ball {
 public:

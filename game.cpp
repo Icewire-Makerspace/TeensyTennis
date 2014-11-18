@@ -1,8 +1,11 @@
 #include "game.h"
-#include "physics\Collision2d.h"
-#include "constants.h"
+#include "collision2d.h"
 
-Game::Game() {
+Game::Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) {
+	utility.screenWidth = _screenWidth;
+	utility.screenHeight = _screenHeight;
+	utility.physicsToPixelRatio = _physicsToPixelRatio;
+	
 	for (int i = 0; i < NUM_PLAYERS; ++i) {
 		controller[i] = 0;
 	}
@@ -53,7 +56,7 @@ bool Game::winCondition() {
 	if (ball.getPosition().x + ball.getRadius() < 0) {
 		++stats.leftScore;
 		return true;
-	} else if (ball.getPosition().x - ball.getRadius() > screenToPhysics(SCREEN_WIDTH)) {
+	} else if (ball.getPosition().x - ball.getRadius() > utility.screenToPhysics(utility.screenWidth)) {
 		++stats.rightScore;
 		return true;
 	}
@@ -80,6 +83,10 @@ bool Game::playerIsActive(int num) {
 
 const GameStats& Game::getStats() {
 	return stats;
+}
+
+const GameUtility& Game::getUtility() {
+	return utility;
 }
 
 float Game::XpositionOfHorizontalWall(int num) {
