@@ -62,12 +62,36 @@ void OctoWS2811Draw::rect(int x, int y, int w, int h) {
 	}
 }
 
+void OctoWS2811Draw::letter(char letter, int x, int y) {
+	const uint8_t* letterBmp = ascii_alph[letter-65];
+	int xMax = x + ascii_width;
+	int yMax = y + ascii_height;
+	int bit;
+	for (int j = y; j < yMax; ++j) {
+		bit = 0x80;
+		for (int i = x; i < xMax; ++i) {
+			if (*letterBmp & bit) {
+				setPixel(i, j);
+			}
+			bit >>= 1;
+		}
+		++letterBmp;
+	}
+	// reset pointer
+	letterBmp -= ascii_height;
+}
+
+void OctoWS2811Draw::number(char num, int x, int y) {
+	const uint8_t* numberBmp = ascii_num[num-48];
+	// TODO
+}
+
 void OctoWS2811Draw::setPixel(int x, int y) {
 	// Assumes (0, 0) is your LED display's top left LED
-	if (x < 0 || x > horizontalResolution - 1) {
+	if (x < 0 || x >= horizontalResolution ) {
 		return;
 	}
-	if (y < 0 || y > verticalResolution - 1) {
+	if (y < 0 || y >= verticalResolution) {
 		return;
 	}
 	uint_fast32_t num;

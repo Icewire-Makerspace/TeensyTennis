@@ -13,15 +13,6 @@ const int config = WS2811_GRB | WS2811_800kHz;
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, reverseMemory, config);
 
 // Set up drawing library
-// Colors
-#define RED 0xFF0000
-#define GREEN 0x00FF00
-#define BLUE 0x0000FF
-#define YELLOW 0xFFFF00
-#define PINK 0xFF1088
-#define ORANGE 0xE05800
-#define WHITE 0xFFFFFF
-#define GRAY 0x646464
 OctoWS2811Draw draw(&leds, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION);
 
 // Set up game
@@ -207,7 +198,7 @@ void drawGame() {
 	// hence the +1
 	
 	// Bounds
-	draw.setColor(GRAY);
+	draw.setColor(LIGHT_GRAY);
 	for (int i = 0; i < NUM_HORIZONTAL_WALLS; ++i) {
 		float x0 = game.getUtility().physicsToScreenX(game.XpositionOfHorizontalWall(i));
 		float y0 = game.getUtility().physicsToScreenY(game.YpositionOfHorizontalWall(i));
