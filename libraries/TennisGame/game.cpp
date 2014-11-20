@@ -32,6 +32,8 @@ void Game::setup(GameSettings _settings) {
 }
 
 void Game::resetPlayersAndBall() {
+	startTimer = 0;
+	pauseBall = true;
 	ballVelocityIncreaseTimer = 0;
 	ball.setup(settings.ballInitialPoint, settings.ballDiameter, settings.ballInitialVelocity);
 
@@ -66,6 +68,14 @@ bool Game::winCondition() {
 
 void Game::tick(float dt) {
 	++stats.tick;
+	
+	if (startTimer >= 0) {
+		startTimer += dt;
+		if (startTimer >= settings.startDelay) {
+			startTimer = -1;
+			pauseBall = false;
+		}
+	}
 	
 	ballVelocityIncreaseTimer += dt;
 	if (ballVelocityIncreaseTimer >= settings.ballVelocityIncreaseInterval) {
@@ -176,11 +186,9 @@ void Game::updatePhysics(float dt) {
 	// Paddle collision check variables
 	physics::vector2d collisionPositionOfPaddle;
 	physics::vector2d paddleToBallCollisionPosition;
-
-
-	// maybe player collision with walls before??
+	
 	// Ball collision check and update
-	{
+	if (!pauseBall) {
 		bool collision = true;
 		int collisionLoopCount = 0;
 		int maxCollisionLoops = 3;

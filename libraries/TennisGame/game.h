@@ -57,6 +57,7 @@ struct GameSettings {
 	float playerMaxMoveSpeed[NUM_PLAYERS];
 
 	float speed;
+	float startDelay;
 };
 
 struct GameStats {
@@ -109,7 +110,10 @@ private:
 	Player player[NUM_PLAYERS];
 	PlayerController* controller[NUM_PLAYERS];
 	
+	float startTimer;
 	float ballVelocityIncreaseTimer;
+	
+	bool pauseBall;
 };
 
 #endif

@@ -121,6 +121,9 @@ void setup() {
 	// Game speed
 	settings.speed = 1.0f;
 	
+	// Wait time before ball starts moving at start of round
+	settings.startDelay = 2.0f;
+	
 	game.setup(settings);
 
 	// Assign controllers to players
@@ -157,8 +160,6 @@ void updateGame(float dt) {
 		} else {
 			drawScore();
 			delay(3000);
-			drawGame();
-			delay(2000); // TODO this delay should be done in game so players can still move...
 		}
 	} else {
 		// Get controller input and convert to player position
@@ -249,13 +250,19 @@ void drawGame() {
 }
 
 void drawLeftWinScreen() {
+	draw.clearBuffer();
 	// TODO
+	draw.drawBuffer();
 }
 
 void drawRightWinScreen() {
+	draw.clearBuffer();
 	// TODO
+	draw.drawBuffer();
 }
 
 void drawScore() {
+	draw.clearBuffer();
 	// TODO
+	draw.drawBuffer();
 }
