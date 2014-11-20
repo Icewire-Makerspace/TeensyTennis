@@ -31,7 +31,7 @@ struct GameUtility {
 	}
 
 	float physicsToScreenY(float y) const {
-		return screenHeight - (physicsToScreen(y));
+		return (screenHeight - 1) - (physicsToScreen(y));
 	}
 };
 
@@ -46,15 +46,17 @@ struct GameSettings {
 	physics::vector2d ballInitialPoint;
 	float ballDiameter;
 	physics::vector2d ballInitialVelocity;
+	float ballVelocityIncrease;
+	float ballVelocityIncreaseInterval;
+	float maxBallVelocity;
 
 	// Players
 	physics::vector2d playerInitialPoint[NUM_PLAYERS];
 	float playerLength[NUM_PLAYERS];
 	float playerHeight[NUM_PLAYERS];
-	float playerMoveSpeed[NUM_PLAYERS];
+	float playerMaxMoveSpeed[NUM_PLAYERS];
 
 	float speed;
-
 };
 
 struct GameStats {
@@ -65,7 +67,6 @@ struct GameStats {
 
 class Game {
 public:
-	//Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) : utility.screenWidth(_screenWidth), utility.screenHeight(_screenHeight), utility.physicsToPixelRatio(_physicsToPixelRatio) {}
 	Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio);
 	void setup(GameSettings _settings);
 	void resetPlayersAndBall();
@@ -75,6 +76,7 @@ public:
 	void activatePlayer(int num);
 	void deactivatePlayer(int num);
 	bool playerIsActive(int num);
+	const Player& getPlayer(int num);
 	const GameStats& getStats();
 	const GameUtility& getUtility();
 
@@ -106,6 +108,8 @@ private:
 	Paddle paddles[NUM_PLAYERS];
 	Player player[NUM_PLAYERS];
 	PlayerController* controller[NUM_PLAYERS];
+	
+	float ballVelocityIncreaseTimer;
 };
 
 #endif

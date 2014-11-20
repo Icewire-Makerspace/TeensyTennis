@@ -32,6 +32,7 @@ void Game::setup(GameSettings _settings) {
 }
 
 void Game::resetPlayersAndBall() {
+	ballVelocityIncreaseTimer = 0;
 	ball.setup(settings.ballInitialPoint, settings.ballDiameter, settings.ballInitialVelocity);
 
 	// Randomize ball take-off
@@ -44,7 +45,7 @@ void Game::resetPlayersAndBall() {
 
 	for (int i = 0; i < NUM_PLAYERS; ++i) {
 		paddles[i].setup(settings.playerInitialPoint[i], settings.playerLength[i], settings.playerHeight[i]);
-		player[i].setup(&paddles[i], settings.playerMoveSpeed[i]);
+		player[i].setup(&paddles[i], settings.playerMaxMoveSpeed[i]);
 	}
 }
 
@@ -53,10 +54,10 @@ void Game::assignController(int playerNum, PlayerController* _controller) {
 }
 
 bool Game::winCondition() {
-	if (ball.getPosition().x + ball.getRadius() < 0) {
+	if (ball.getPosition().x + ball.getRadius() + 1 < 0) {
 		++stats.leftScore;
 		return true;
-	} else if (ball.getPosition().x - ball.getRadius() > utility.screenToPhysics(utility.screenWidth)) {
+	} else if (ball.getPosition().x - ball.getRadius() - 1 > utility.screenToPhysics(utility.screenWidth - 1)) {
 		++stats.rightScore;
 		return true;
 	}
@@ -65,6 +66,19 @@ bool Game::winCondition() {
 
 void Game::tick(float dt) {
 	++stats.tick;
+	
+	ballVelocityIncreaseTimer += dt;
+	if (ballVelocityIncreaseTimer >= settings.ballVelocityIncreaseInterval) {
+		ballVelocityIncreaseTimer = 0;
+		ball.increaseVelocity(settings.ballVelocityIncrease);
+		if (ball.getVelocityX() > settings.maxBallVelocity) {
+			ball.setVelocityX(settings.maxBallVelocity);
+		}
+		if (ball.getVelocityY() > settings.maxBallVelocity) {
+			ball.setVelocityY(settings.maxBallVelocity);
+		}
+	}
+	
 	updatePlayers();
 	updatePhysics(dt * settings.speed);
 }
@@ -79,6 +93,10 @@ void Game::deactivatePlayer(int num) {
 
 bool Game::playerIsActive(int num) {
 	return player[num].active;
+}
+
+const Player& Game::getPlayer(int num) {
+	return player[num];
 }
 
 const GameStats& Game::getStats() {
@@ -144,13 +162,7 @@ float Game::heightOfPlayer(int num) {
 void Game::updatePlayers() {
 	for (int i = 0; i < NUM_PLAYERS; ++i) {
 		if (player[i].active && controller[i]) {
-			if (controller[i]->up()) {
-				player[i].moveUp();
-			} else if (controller[i]->down()) {
-				player[i].moveDown();
-			} else {
-				player[i].stop();
-			}
+			player[i].changeSpeedTo(controller[i]->getSpeed());
 		}
 	}
 }

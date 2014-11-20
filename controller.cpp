@@ -1,24 +1,9 @@
 #include "controller.h"
 
-void PlayerController::moveUp() {
-	u = true;
-	d = false;
+void PlayerController::setSpeed(float _speed) {
+	speed = _speed;
 }
 
-void PlayerController::moveDown() {
-	u = false;
-	d = true;
-}
-
-void PlayerController::stop() {
-	u = false;
-	d = false;
-}
-
-bool PlayerController::up() {
-	return u;
-}
-
-bool PlayerController::down() {
-	return d;
+float PlayerController::getSpeed() {
+	return speed;
 }

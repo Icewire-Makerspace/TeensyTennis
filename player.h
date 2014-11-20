@@ -6,7 +6,7 @@
 class Player {
 public:
 	Player() : active(true) {}
-	void setup(Paddle* _paddle, float _movementSpeed);
+	void setup(Paddle* _paddle, float _maxMovementSpeed);
 	const Paddle* getPaddle() const;
 	void update(float dt);
 
@@ -14,15 +14,14 @@ public:
 	void setPosition(physics::vector2d position);
 
 	// Controls
-	void moveUp();
-	void moveDown();
+	void changeSpeedTo(float speed);
 	void stop();
 
 	bool active;
 
 private:
 	Paddle *paddle;
-	float movementSpeed;
+	float maxMovementSpeed;
 };
 
 #endif

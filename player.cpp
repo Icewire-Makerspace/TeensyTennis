@@ -1,8 +1,8 @@
 #include "player.h"
 
-void Player::setup(Paddle* _paddle, float _movementSpeed) {
+void Player::setup(Paddle* _paddle, float _maxMovementSpeed) {
 	paddle = _paddle;
-	movementSpeed = _movementSpeed;
+	maxMovementSpeed = _maxMovementSpeed;
 }
 
 const Paddle* Player::getPaddle() const {
@@ -17,12 +17,14 @@ void Player::setPosition(physics::vector2d position) {
 	paddle->setPosition(position);
 }
 
-void Player::moveUp() {
-	paddle->setVelocity(movementSpeed);
-}
-
-void Player::moveDown() {
-	paddle->setVelocity(-movementSpeed);
+void Player::changeSpeedTo(float speed) {
+	if (speed > maxMovementSpeed) {
+		speed = maxMovementSpeed;
+	} else if (speed < -maxMovementSpeed) {
+		speed = -maxMovementSpeed;
+	}
+	
+	paddle->setVelocity(speed);
 }
 
 void Player::stop() {

@@ -9,9 +9,9 @@ void Ball::setup(physics::vector2d p, float diameter, physics::vector2d velocity
 }
 
 void Ball::setPosition(physics::vector2d position) {
-	// tmp
+	// tmp debugging
 	if (position.y < 1 || position.y > 23) {
-		box.velocity.x = 0;
+//		box.velocity.x = 0;
 	}
 
 	box.position = position;
@@ -37,19 +37,27 @@ void Ball::setVelocityX(float speed) {
 	box.velocity.x = speed;
 }
 
+float Ball::getVelocityX() {
+	return box.velocity.x;
+}
+
 void Ball::setVelocityY(float speed) {
 	box.velocity.y = speed;
 }
 
-void Ball::increaseVelocity(float multiplier) {
-	box.velocity *= multiplier;
+float Ball::getVelocityY() {
+	return box.velocity.y;
+}
+
+void Ball::increaseVelocity(float mult) {
+	box.velocity *= mult;
 }
 
 void Ball::updatePhysics(float dt) {
-	// tmp
+	// tmp debugging
 	physics::vector2d position = box.position + box.velocity * dt;
 	if (position.y < 1 || position.y > 23) {
-		box.velocity.x = 0;
+//		box.velocity.x = 0;
 	}
 
 	box.position += box.velocity * dt;

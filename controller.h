@@ -3,18 +3,12 @@
 
 class PlayerController {
 public:
-	PlayerController() : u(false), d(false) {}
-
-	void moveUp();
-	void moveDown();
-	void stop();
-
-	bool up();
-	bool down();
+	PlayerController() : speed(0) {}
+	void setSpeed(float _speed);
+	float getSpeed();
 
 private:
-	bool u;
-	bool d;
+	float speed;
 };
 
 #endif

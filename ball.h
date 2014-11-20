@@ -12,8 +12,10 @@ public:
 	void reverseVelocityX();
 	void reverseVelocityY();
 	void setVelocityX(float speed);
+	float getVelocityX();
 	void setVelocityY(float speed);
-	void increaseVelocity(float multiplier);
+	float getVelocityY();
+	void increaseVelocity(float mult);
 	void updatePhysics(float dt);
 	const physics::MovingBox* getPhysicsObject() const;
 
