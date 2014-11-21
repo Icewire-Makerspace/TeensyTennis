@@ -71,6 +71,7 @@ public:
 	Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio);
 	void setup(GameSettings _settings);
 	void resetPlayersAndBall();
+	void resetScore();
 	void assignController(int playerNum, PlayerController* _controller);
 	bool winCondition();
 	void tick(float dt);

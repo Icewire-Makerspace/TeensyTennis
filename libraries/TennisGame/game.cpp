@@ -12,11 +12,6 @@ Game::Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) {
 }
 
 void Game::setup(GameSettings _settings) {
-	// Stats
-	stats.leftScore = 0;
-	stats.rightScore = 0;
-	stats.tick = 0;
-
 	// Settings
 	settings = _settings;
 
@@ -27,8 +22,9 @@ void Game::setup(GameSettings _settings) {
 	for (int i = 0; i < NUM_VERTICAL_WALLS; ++i) {
 		verticalWalls[i].setup(settings.verticalWallPoints[i], settings.verticalWallLengths[i]);
 	}
-
+	
 	resetPlayersAndBall();
+	resetScore();
 }
 
 void Game::resetPlayersAndBall() {
@@ -51,16 +47,22 @@ void Game::resetPlayersAndBall() {
 	}
 }
 
+void Game::resetScore() {
+	stats.leftScore = 0;
+	stats.rightScore = 0;
+	stats.tick = 0;
+}
+
 void Game::assignController(int playerNum, PlayerController* _controller) {
 	controller[playerNum] = _controller;
 }
 
 bool Game::winCondition() {
 	if (ball.getPosition().x + ball.getRadius() + 1 < 0) {
-		++stats.leftScore;
+		++stats.rightScore;
 		return true;
 	} else if (ball.getPosition().x - ball.getRadius() - 1 > utility.screenToPhysics(utility.screenWidth - 1)) {
-		++stats.rightScore;
+		++stats.leftScore;
 		return true;
 	}
 	return false;
