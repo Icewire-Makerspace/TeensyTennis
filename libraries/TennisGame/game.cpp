@@ -79,15 +79,23 @@ void Game::tick(float dt) {
 		}
 	}
 	
-	ballVelocityIncreaseTimer += dt;
-	if (ballVelocityIncreaseTimer >= settings.ballVelocityIncreaseInterval) {
-		ballVelocityIncreaseTimer = 0;
-		ball.increaseVelocity(settings.ballVelocityIncrease);
-		if (ball.getVelocityX() > settings.maxBallVelocity) {
-			ball.setVelocityX(settings.maxBallVelocity);
-		}
-		if (ball.getVelocityY() > settings.maxBallVelocity) {
-			ball.setVelocityY(settings.maxBallVelocity);
+	if (!pauseBall) {
+		ballVelocityIncreaseTimer += dt;
+		if (ballVelocityIncreaseTimer >= settings.ballVelocityIncreaseInterval) {
+			ballVelocityIncreaseTimer = 0;
+			ball.increaseVelocity(settings.ballVelocityIncrease);
+			
+			if (ball.getVelocityX() > settings.maxBallVelocity) {
+				ball.setVelocityX(settings.maxBallVelocity);
+			} else if (ball.getVelocityX() < -settings.maxBallVelocity) {
+				ball.setVelocityX(-settings.maxBallVelocity);
+			}
+			
+			if (ball.getVelocityY() > settings.maxBallVelocity) {
+				ball.setVelocityY(settings.maxBallVelocity);
+			} else if (ball.getVelocityY() < -settings.maxBallVelocity) {
+				ball.setVelocityY(-settings.maxBallVelocity);
+			}
 		}
 	}
 	

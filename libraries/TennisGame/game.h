@@ -96,7 +96,6 @@ public:
 	float YpositionOfPlayer(int num);
 	float widthOfPlayer(int num);
 	float heightOfPlayer(int num);
-
 private:
 	void updatePlayers();
 	void updatePhysics(float dt);
