@@ -81,9 +81,30 @@ void OctoWS2811Draw::letter(char letter, int x, int y) {
 	letterBmp -= ascii_height;
 }
 
-void OctoWS2811Draw::number(char num, int x, int y) {
-	const uint8_t* numberBmp = ascii_num[num-48];
-	// TODO
+void OctoWS2811Draw::string(const char *str, int x, int y) {
+	while (*str) {
+		letter(*str++, x, y);
+		x += 8;
+	}
+}
+
+void OctoWS2811Draw::number(int num, int x, int y) {
+	const uint8_t* numberBmp = ascii_num[num];
+	int xMax = x + ascii_width;
+	int yMax = y + ascii_height;
+	int bit;
+	for (int j = y; j < yMax; ++j) {
+		bit = 0x80;
+		for (int i = x; i < xMax; ++i) {
+			if (*numberBmp & bit) {
+				setPixel(i, j);
+			}
+			bit >>= 1;
+		}
+		++numberBmp;
+	}
+	// reset pointer
+	numberBmp -= ascii_height;
 }
 
 void OctoWS2811Draw::setPixel(int x, int y) {

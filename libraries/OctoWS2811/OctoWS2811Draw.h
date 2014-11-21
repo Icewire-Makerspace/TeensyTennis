@@ -78,7 +78,8 @@ public:
 	void line(int x0, int y0, int x1, int y1);
 	void rect(int x, int y, int w, int h);
 	void letter(char letter, int x, int y);
-	void number(char num, int x, int y);
+	void string(const char *str, int x, int y);
+	void number(int num, int x, int y);
 	
 private:
 	void setPixel(int x, int y);
