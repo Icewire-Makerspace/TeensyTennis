@@ -6,7 +6,7 @@ Game::Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) {
 	utility.screenHeight = _screenHeight;
 	utility.physicsToPixelRatio = _physicsToPixelRatio;
 	
-	for (int i = 0; i < NUM_PLAYERS; ++i) {
+	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		controller[i] = 0;
 	}
 }
@@ -41,7 +41,7 @@ void Game::resetPlayersAndBall() {
 		ball.reverseVelocityY();
 	}
 
-	for (int i = 0; i < NUM_PLAYERS; ++i) {
+	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		paddles[i].setup(settings.playerInitialPoint[i], settings.playerLength[i], settings.playerHeight[i]);
 		player[i].setup(&paddles[i], settings.playerMaxMoveSpeed[i]);
 	}
@@ -180,7 +180,7 @@ float Game::heightOfPlayer(int num) {
 }
 
 void Game::updatePlayers() {
-	for (int i = 0; i < NUM_PLAYERS; ++i) {
+	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		if (player[i].active && controller[i]) {
 			player[i].changeSpeedTo(controller[i]->getSpeed());
 		}
@@ -208,7 +208,7 @@ void Game::updatePhysics(float dt) {
 
 			// Players
 			const Paddle* paddle;
-			for (int i = 0; i < NUM_PLAYERS; ++i) {
+			for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 				if (player[i].active) {
 					paddle = player[i].getPaddle();
 					if (physics::movingBoxesCollide(ballDt, *ball.getPhysicsObject(), *paddle->getPhysicsObject(), collisionPositionOfBall, collisionPositionOfPaddle, timeOfCollision)) {
@@ -324,7 +324,7 @@ void Game::updatePhysics(float dt) {
 
 	// Players collision check and update
 	const Paddle* paddle;
-	for (int i = 0; i < NUM_PLAYERS; ++i) {
+	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		if (player[i].active) {
 			paddle = player[i].getPaddle();
 

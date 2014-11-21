@@ -11,7 +11,7 @@
 
 #define NUM_HORIZONTAL_WALLS 2
 #define NUM_VERTICAL_WALLS 4
-#define NUM_PLAYERS 4
+#define MAX_NUM_PLAYERS 4
 
 struct GameUtility {
 	int screenWidth;
@@ -51,10 +51,10 @@ struct GameSettings {
 	float maxBallVelocity;
 
 	// Players
-	physics::vector2d playerInitialPoint[NUM_PLAYERS];
-	float playerLength[NUM_PLAYERS];
-	float playerHeight[NUM_PLAYERS];
-	float playerMaxMoveSpeed[NUM_PLAYERS];
+	physics::vector2d playerInitialPoint[MAX_NUM_PLAYERS];
+	float playerLength[MAX_NUM_PLAYERS];
+	float playerHeight[MAX_NUM_PLAYERS];
+	float playerMaxMoveSpeed[MAX_NUM_PLAYERS];
 
 	float speed;
 	float startDelay;
@@ -96,6 +96,7 @@ public:
 	float YpositionOfPlayer(int num);
 	float widthOfPlayer(int num);
 	float heightOfPlayer(int num);
+	
 private:
 	void updatePlayers();
 	void updatePhysics(float dt);
@@ -106,9 +107,9 @@ private:
 	Ball ball;
 	HorizontalWall horizontalWalls[NUM_HORIZONTAL_WALLS];
 	VerticalWall verticalWalls[NUM_VERTICAL_WALLS];
-	Paddle paddles[NUM_PLAYERS];
-	Player player[NUM_PLAYERS];
-	PlayerController* controller[NUM_PLAYERS];
+	Paddle paddles[MAX_NUM_PLAYERS];
+	Player player[MAX_NUM_PLAYERS];
+	PlayerController* controller[MAX_NUM_PLAYERS];
 	
 	float startTimer;
 	float ballVelocityIncreaseTimer;
