@@ -33,12 +33,31 @@ PlayerController controller[4];
 const int playerPin[2] = {PLAYER_1_PIN, PLAYER_2_PIN};
 
 // Set up player colors
-const int playerColor[4] = {RED, BLUE, RED, BLUE};
+const char* P1_COLOR = "GREEN";
+const char* P2_COLOR = "WHITE";
+//const int playerColor[4] = {RED, BLUE, RED, BLUE};
+const int playerColor[4] = {GREEN, WHITE, GREEN, WHITE};
 
 // Run the game at 60FPS
 const float REFRESH_RATE = 1000.0f/60.0f;
 unsigned long lastRefresh;
 const float frameRate = 1.0f/60.0f;
+
+// Button
+const int buttonPin = 23;
+const int debounceTime = 20;
+volatile unsigned long lastMicros;
+volatile bool buttonPressed;
+
+// States
+enum State {
+	MAIN_MENU,
+	TWO_PLAYERS,
+	FOUR_PLAYERS
+};
+
+State state;
+void (*update)(float);
 
 void setup() {
 	// debugging
@@ -98,13 +117,13 @@ void setup() {
 	settings.playerMaxMoveSpeed[1] = PLAYER_MAX_MOVE_SPEED;
 
 	// Player 3
-	settings.playerInitialPoint[2] = physics::vector2d(19, 9);
+	settings.playerInitialPoint[2] = physics::vector2d(35, 9);
 	settings.playerLength[2] = PLAYER_LENGTH;
 	settings.playerHeight[2] = PLAYER_HEIGHT;
 	settings.playerMaxMoveSpeed[2] = PLAYER_MAX_MOVE_SPEED;
 
 	// Player 4
-	settings.playerInitialPoint[3] = physics::vector2d(35, 9);
+	settings.playerInitialPoint[3] = physics::vector2d(19, 9);
 	settings.playerLength[3] = PLAYER_LENGTH;
 	settings.playerHeight[3] = PLAYER_HEIGHT;
 	settings.playerMaxMoveSpeed[3] = PLAYER_MAX_MOVE_SPEED;
@@ -124,41 +143,104 @@ void setup() {
 	// Disable player 3 & 4
 	game.deactivatePlayer(2);
 	game.deactivatePlayer(3);
+	
+	// Button
+	pinMode(buttonPin, INPUT_PULLUP);
+	attachInterrupt(buttonPin, isrService, FALLING);
+	buttonPressed = false;
+	
+	// Initial state is main menu
+	goToMainMenu();
+}
+
+void isrDebounceService() {
+	cli();
+	if ((long)(micros() - lastMicros) >= debounceTime * 1000) {
+		lastMicros = micros();
+		isrService();
+	}
+	sei();
+}
+
+void isrService() {
+	buttonPressed = true;
+}
+
+void goToMainMenu() {
+	state = MAIN_MENU;
+	// pause and don't draw walls?
+	update = updateMainMenu;
+}
+
+void goToTwoPlayers() {
+	state = TWO_PLAYERS;
+	game.resetScore();
+	game.deactivatePlayer(2);
+	game.deactivatePlayer(3);
+	update = updateGame;
+}
+
+void goToFourPlayers() {
+	state = FOUR_PLAYERS;
+	game.resetScore();
+	game.activatePlayer(2);
+	game.activatePlayer(3);
+	update = updateGame;
 }
 
 void loop() {
+	// Handle button pressed
+	if (buttonPressed) {
+		// Since the button we're using sucks
+		delay(1000);
+		buttonPressed = false;
+		switch (state) {
+			case MAIN_MENU:
+				goToTwoPlayers();
+				break;
+			case TWO_PLAYERS:
+				goToFourPlayers();
+				break;
+			case FOUR_PLAYERS:
+				goToMainMenu();
+		}
+	}
+
 	unsigned long now = millis();
 	if ((now - lastRefresh) >= REFRESH_RATE) {
 		lastRefresh= now;
-
-		updateGame(frameRate);
-
+		update(frameRate);
 	}
+}
+
+void updateMainMenu(float dt) {
+	// Not enough time and space to do too much here so let's just show the title
+	drawTitle();
 }
 
 // Our game loop
 void updateGame(float dt) {
 	if (game.winCondition()) {
+		delay(500);
 		game.resetPlayersAndBall();
 		if (game.getStats().leftScore >= WINNING_SCORE) {
 			drawLeftWinScreen();
 			delay(6000);
-			// go back to main menu TODO
-		} else if (game.getStats().leftScore >= WINNING_SCORE) {
+			goToMainMenu();
+		} else if (game.getStats().rightScore >= WINNING_SCORE) {
 			drawRightWinScreen();
 			delay(6000);
-			// go back to main menu TODO
+			goToMainMenu();
 		} else {
 			drawScore();
 			delay(3000);
-		}
+		} 
 	} else {
 		// Get controller input and convert to player position
 		float playerExtentY = PLAYER_HEIGHT * 0.5f;
 		for (int i = 0; i < 2; ++i) {
 			// Convert the analog input to the player's desired position
 			int val = analogRead(playerPin[i]);
-			Serial.println(val);
 			float desiredPositionY = map(val, 0, 1023, 0, 23);
 			
 			// Now set player's velocity such that he will be in the desired position next tick
@@ -198,7 +280,7 @@ void drawGame() {
 	// hence the +1
 	
 	// Bounds
-	draw.setColor(LIGHT_GRAY);
+	draw.setColor(0x640064); // still messing with the color...
 	for (int i = 0; i < NUM_HORIZONTAL_WALLS; ++i) {
 		float x0 = game.getUtility().physicsToScreenX(game.XpositionOfHorizontalWall(i));
 		float y0 = game.getUtility().physicsToScreenY(game.YpositionOfHorizontalWall(i));
@@ -242,18 +324,46 @@ void drawGame() {
 
 void drawLeftWinScreen() {
 	draw.clearBuffer();
-	// TODO
+	draw.setColor(playerColor[0]);
+	draw.string(P1_COLOR, 12, 5);
+	draw.setColor(LIGHT_GRAY);
+	draw.string("WINS", 12, 13);
+	draw.setColor(playerColor[0]);
+	draw.number(game.getStats().leftScore, 1, 9);
+	draw.setColor(playerColor[1]);
+	draw.number(game.getStats().rightScore, 47, 9);
 	draw.drawBuffer();
 }
 
 void drawRightWinScreen() {
 	draw.clearBuffer();
-	// TODO
+	draw.setColor(playerColor[1]);
+	draw.string(P2_COLOR, 12, 5);
+	draw.setColor(LIGHT_GRAY);
+	draw.string("WINS", 12, 13);
+	draw.setColor(playerColor[0]);
+	draw.number(game.getStats().leftScore, 1, 9);
+	draw.setColor(playerColor[1]);
+	draw.number(game.getStats().rightScore, 47, 9);
 	draw.drawBuffer();
 }
 
 void drawScore() {
 	draw.clearBuffer();
-	// TODO
+	draw.setColor(playerColor[0]);
+	draw.number(game.getStats().leftScore, 14, 9);
+	draw.setColor(playerColor[1]);
+	draw.number(game.getStats().rightScore, 34, 9);
+	draw.drawBuffer();
+}
+
+void drawTitle() {
+	draw.clearBuffer();
+	draw.setColor(BLUE);
+	draw.string("ICEWIRE", 0, 1);
+	draw.setColor(playerColor[1]);
+	draw.string("TEENSY", 2, 9);
+	draw.setColor(playerColor[0]);
+	draw.string("TENNIS", 4, 17);
 	draw.drawBuffer();
 }
