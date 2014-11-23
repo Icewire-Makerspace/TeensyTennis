@@ -104,12 +104,13 @@ namespace physics {
 		return true;
 	}
 
+	const float epsilon = 0.001f;
 	inline bool boxCollidesWithHorizontalLine(const Box& box, const HorizontalLine& line) {
-		return rectsOverlap(box.position, line.position, box.extents, vector2d(line.extent, 0));
+		return rectsOverlap(box.position, line.position, box.extents, vector2d(line.extent, epsilon));
 	}
 
 	inline bool boxCollidesWithVerticalLine(const Box& box, const VerticalLine& line) {
-		return rectsOverlap(box.position, line.position, box.extents, vector2d(0, line.extent));
+		return rectsOverlap(box.position, line.position, box.extents, vector2d(epsilon, line.extent));
 	}
 
 	bool movingBoxCollidesWithHorizontalLine(float dt, const MovingBox& box, const HorizontalLine& line, vector2d& collisionPositionOfBox, float& normalizedTimeOfCollision) {

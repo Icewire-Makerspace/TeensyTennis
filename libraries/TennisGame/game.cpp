@@ -127,6 +127,22 @@ const GameUtility& Game::getUtility() {
 	return utility;
 }
 
+void Game::changeStartDelay(float _startDelay) {
+	settings.startDelay = _startDelay;
+}
+
+float Game::getStartDelay() {
+	return settings.startDelay;
+}
+
+bool Game::ballIsPaused() {
+	return pauseBall;
+}
+
+float Game::currentStartTime() {
+	return startTimer;
+}
+
 float Game::XpositionOfHorizontalWall(int num) {
 	return horizontalWalls[num].getPosition().x - horizontalWalls[num].getExtent();
 }

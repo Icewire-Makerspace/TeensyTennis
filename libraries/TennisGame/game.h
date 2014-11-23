@@ -81,6 +81,10 @@ public:
 	const Player& getPlayer(int num);
 	const GameStats& getStats();
 	const GameUtility& getUtility();
+	void changeStartDelay(float _startDelay);
+	float getStartDelay();
+	bool ballIsPaused();
+	float currentStartTime();
 
 	// For drawing
 	float XpositionOfHorizontalWall(int num);

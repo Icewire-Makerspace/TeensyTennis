@@ -16,29 +16,31 @@ OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, reverseMemory, confi
 OctoWS2811Draw draw(&leds, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION);
 
 // Set up game
-// The first to 5 points wins
-#define WINNING_SCORE 5
+// The first to 3 points wins
+#define WINNING_SCORE 3
 #define PHYSICS_TO_PIXEL_RATIO 1
 #define HORIZONTAL_WALL_LENGTH 55
 #define VERTICAL_WALL_HEIGHT 3
 #define PLAYER_LENGTH 1
 #define PLAYER_HEIGHT 5
-#define PLAYER_MAX_MOVE_SPEED 100
+#define PLAYER_MAX_MOVE_SPEED 100.0f
+#define BALL_INITIAL_SPEED 10.0f
+#define BALL_MAX_SPEED 120.0f
+#define BALL_INCREASE_SPEED_INTERVAL 2.5f
 Game game(HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PHYSICS_TO_PIXEL_RATIO);
 
 // Set up controllers
 #define NUM_PLAYERS 4
 #define PLAYER_1_PIN 17
-#define PLAYER_2_PIN 22
-// TODO
-// #define PLAYER_3_PIN ?
-// #define PLAYER_4_PIN ?
+#define PLAYER_2_PIN 18
+#define PLAYER_3_PIN 19
+#define PLAYER_4_PIN 22
 PlayerController controller[NUM_PLAYERS];
-const int playerPin[2] = {PLAYER_1_PIN, PLAYER_2_PIN};
+const int playerPin[NUM_PLAYERS] = {PLAYER_1_PIN, PLAYER_2_PIN, PLAYER_3_PIN, PLAYER_4_PIN};
 
 // Set up player colors
-const char* P1_COLOR = "GREEN";
-const char* P2_COLOR = "WHITE";
+const char* TEAM_1_COLOR = "GREEN";
+const char* TEAM_2_COLOR = "WHITE";
 const int playerColor[NUM_PLAYERS] = {GREEN, WHITE, GREEN, WHITE};
 
 // Run the game at 60FPS
@@ -63,6 +65,10 @@ State state;
 void (*update)(float);
 
 // Boundary changes colors
+// Normal mode
+//#define BOUNDARY_CHANGE_COLOR_SPEED 5.0f
+// Japanese game show mode
+#define BOUNDARY_CHANGE_COLOR_SPEED 150.0f
 float boundR;
 float boundG;
 float boundB;
@@ -72,6 +78,9 @@ const uint32_t boundaryColors[5] = {0x992099, // pink
 0x999920, // yellow
 0x209999}; // blue
 int currentBoundaryColor;
+
+#define INITIAL_START_DELAY 5.0f
+#define ROUND_START_DELAY 2.0f
 
 void setup() {
 	// Init display
@@ -129,16 +138,16 @@ void setup() {
 	// Set up ball
 	settings.ballInitialPoint = physics::vector2d(28, 11);
 	settings.ballDiameter = 2;
-	settings.ballInitialVelocity = physics::vector2d(10.0f, 10.0f);
+	settings.ballInitialVelocity = physics::vector2d(BALL_INITIAL_SPEED, BALL_INITIAL_SPEED);
 	settings.ballVelocityIncrease = 1.1f;
-	settings.ballVelocityIncreaseInterval = 5.0f;
-	settings.maxBallVelocity = 120.0f;
+	settings.ballVelocityIncreaseInterval = BALL_INCREASE_SPEED_INTERVAL;
+	settings.maxBallVelocity = BALL_MAX_SPEED;
 
 	// Game speed
 	settings.speed = 1.0f;
 	
 	// Wait time before ball starts moving at start of round
-	settings.startDelay = 2.0f;
+	settings.startDelay = ROUND_START_DELAY;
 	
 	// Init game with settings
 	game.setup(settings);
@@ -192,6 +201,7 @@ void goToTwoPlayers() {
 	game.resetPlayersAndBall();
 	game.deactivatePlayer(2);
 	game.deactivatePlayer(3);
+	game.changeStartDelay(INITIAL_START_DELAY);
 	update = updateGame;
 }
 
@@ -201,13 +211,14 @@ void goToFourPlayers() {
 	game.resetPlayersAndBall();
 	game.activatePlayer(2);
 	game.activatePlayer(3);
+	game.changeStartDelay(INITIAL_START_DELAY);
 	update = updateGame;
 }
 
 void loop() {
 	// Handle button pressed
 	if (buttonPressed) {
-		// Since the button we're using sucks
+		// Let's still make sure we don't hit the button more than once at a time
 		delay(1000);
 		buttonPressed = false;
 		switch (state) {
@@ -248,6 +259,7 @@ void updateGame(float dt) {
 			delay(6000);
 			goToMainMenu();
 		} else {
+			game.changeStartDelay(ROUND_START_DELAY);
 			drawScore();
 			delay(3000);
 		} 
@@ -304,14 +316,26 @@ void drawGame(float dt) {
 	
 	// Bounds
 	uint32_t desiredColor = boundaryColors[currentBoundaryColor];
-	float speed = 5.0f;
+	
+	// Normal mode
+	//float speed = 5.0f;
+
+	// Japanese game show mode
+	float speed = BOUNDARY_CHANGE_COLOR_SPEED;
+	
 	int hitColor = 0;
 	{
 		uint8_t desiredColorR = desiredColor >> 16;
 		if (boundR > desiredColorR) {
 			boundR -= dt * speed;
+			if (boundR < desiredColorR) {
+				boundR = desiredColorR;
+			}
 		} else if (boundR < desiredColorR - 1) {
 			boundR += dt * speed;
+			if (boundR > desiredColorR) {
+				boundR = desiredColorR;
+			}
 		} else {
 			++hitColor;
 		}
@@ -321,8 +345,14 @@ void drawGame(float dt) {
 		uint8_t desiredColorG = desiredColor >> 8;
 		if (boundG > desiredColorG) {
 			boundG -= dt * speed;
+			if (boundG < desiredColorG) {
+				boundG = desiredColorG;
+			}
 		} else if (boundG < desiredColorG - 1) {
 			boundG += dt * speed;
+			if (boundG > desiredColorG) {
+				boundG = desiredColorG;
+			}
 		} else {
 			++hitColor;
 		}
@@ -332,8 +362,14 @@ void drawGame(float dt) {
 		uint8_t desiredColorB = desiredColor;
 		if (boundB > desiredColorB) {
 			boundB -= dt * speed;
+			if (boundB < desiredColorB) {
+				boundB = desiredColorB;
+			}
 		} else if (boundB < desiredColorB - 1) {
 			boundB += dt * speed;
+			if (boundB > desiredColorB) {
+				boundB = desiredColorB;
+			}
 		} else {
 			++hitColor;
 		}
@@ -391,6 +427,10 @@ void drawGame(float dt) {
 			draw.rect(x, y+1, w+1, h);
 		}
 	}
+	
+	if (game.ballIsPaused()) {
+		draw.number((int)(game.getStartDelay() - game.currentStartTime() + 1), 23, 3);
+	}
 
 	draw.drawBuffer();
 }
@@ -398,26 +438,26 @@ void drawGame(float dt) {
 void drawLeftWinScreen() {
 	draw.clearBuffer();
 	draw.setColor(playerColor[0]);
-	draw.string(P1_COLOR, 12, 5);
+	draw.string(TEAM_1_COLOR, 12, 5);
 	draw.setColor(LIGHT_GRAY);
 	draw.string("WINS", 12, 13);
 	draw.setColor(playerColor[0]);
-	draw.number(game.getStats().leftScore, 1, 9);
+	draw.number(game.getStats().leftScore, 1, 16);
 	draw.setColor(playerColor[1]);
-	draw.number(game.getStats().rightScore, 47, 9);
+	draw.number(game.getStats().rightScore, 47, 16);
 	draw.drawBuffer();
 }
 
 void drawRightWinScreen() {
 	draw.clearBuffer();
 	draw.setColor(playerColor[1]);
-	draw.string(P2_COLOR, 12, 5);
+	draw.string(TEAM_2_COLOR, 12, 5);
 	draw.setColor(LIGHT_GRAY);
 	draw.string("WINS", 12, 13);
 	draw.setColor(playerColor[0]);
-	draw.number(game.getStats().leftScore, 1, 9);
+	draw.number(game.getStats().leftScore, 1, 16);
 	draw.setColor(playerColor[1]);
-	draw.number(game.getStats().rightScore, 47, 9);
+	draw.number(game.getStats().rightScore, 47, 16);
 	draw.drawBuffer();
 }
 
@@ -432,7 +472,8 @@ void drawScore() {
 
 void drawTitle() {
 	draw.clearBuffer();
-	draw.setColor(BLUE);
+	// Dim blue
+	draw.setColor(0x000070);
 	draw.string("ICEWIRE", 0, 1);
 	draw.setColor(playerColor[1]);
 	draw.string("TEENSY", 2, 9);
