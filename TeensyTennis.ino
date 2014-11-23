@@ -25,7 +25,7 @@ OctoWS2811Draw draw(&leds, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION);
 #define PLAYER_HEIGHT 5
 #define PLAYER_MAX_MOVE_SPEED 100.0f
 #define BALL_INITIAL_SPEED 10.0f
-#define BALL_FINAL_ROUND_SPEED 20.0f
+#define BALL_FINAL_ROUND_SPEED 25.0f
 #define BALL_MAX_SPEED 120.0f
 #define BALL_INCREASE_SPEED_INTERVAL 2.5f
 Game game(HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PHYSICS_TO_PIXEL_RATIO);
@@ -67,7 +67,7 @@ void (*update)(float);
 
 // Boundary changes colors
 #define NORMAL_BOUNDARY_CHANGE_COLOR_SPEED 100.0f
-#define FINAL_ROUND_BOUNDARY_CHANGE_COLOR_SPEED 200.0f
+#define FINAL_ROUND_BOUNDARY_CHANGE_COLOR_SPEED 600.0f
 float boundaryChangeColorSpeed;
 float boundR;
 float boundG;
@@ -480,8 +480,11 @@ void drawScore() {
 }
 
 void drawFinalRound() {
-	draw.string("FINAL", 8, 5);
-	draw.string("ROUND", 8, 13);
+	draw.clearBuffer();
+	draw.setColor(0x400000);
+	draw.string("FINAL", 8, 4);
+	draw.string("ROUND", 8, 14);
+	draw.drawBuffer();
 }
 
 void drawTitle() {
