@@ -143,6 +143,10 @@ float Game::currentStartTime() {
 	return startTimer;
 }
 
+void Game::changeBallInitialVelocity(physics::vector2d velocity) {
+	settings.ballInitialVelocity = velocity;
+}
+
 float Game::XpositionOfHorizontalWall(int num) {
 	return horizontalWalls[num].getPosition().x - horizontalWalls[num].getExtent();
 }

@@ -25,6 +25,7 @@ OctoWS2811Draw draw(&leds, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION);
 #define PLAYER_HEIGHT 5
 #define PLAYER_MAX_MOVE_SPEED 100.0f
 #define BALL_INITIAL_SPEED 10.0f
+#define BALL_FINAL_ROUND_SPEED 25.0f
 #define BALL_MAX_SPEED 120.0f
 #define BALL_INCREASE_SPEED_INTERVAL 2.5f
 Game game(HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PHYSICS_TO_PIXEL_RATIO);
@@ -36,12 +37,12 @@ Game game(HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PHYSICS_TO_PIXEL_RATIO);
 #define PLAYER_3_PIN 19
 #define PLAYER_4_PIN 22
 PlayerController controller[NUM_PLAYERS];
-const int playerPin[NUM_PLAYERS] = {PLAYER_1_PIN, PLAYER_2_PIN, PLAYER_3_PIN, PLAYER_4_PIN};
+const int playerPin[NUM_PLAYERS] = {PLAYER_1_PIN, PLAYER_2_PIN, PLAYER_4_PIN, PLAYER_3_PIN};
 
 // Set up player colors
 const char* TEAM_1_COLOR = "GREEN";
 const char* TEAM_2_COLOR = "WHITE";
-const int playerColor[NUM_PLAYERS] = {GREEN, WHITE, GREEN, WHITE};
+const int playerColor[NUM_PLAYERS] = {GREEN, WHITE, WHITE, GREEN};
 
 // Run the game at 60FPS
 const float REFRESH_RATE = 1000.0f/60.0f;
@@ -65,10 +66,9 @@ State state;
 void (*update)(float);
 
 // Boundary changes colors
-// Normal mode
-//#define BOUNDARY_CHANGE_COLOR_SPEED 5.0f
-// Japanese game show mode
-#define BOUNDARY_CHANGE_COLOR_SPEED 150.0f
+#define NORMAL_BOUNDARY_CHANGE_COLOR_SPEED 100.0f
+#define FINAL_ROUND_BOUNDARY_CHANGE_COLOR_SPEED 600.0f
+float boundaryChangeColorSpeed;
 float boundR;
 float boundG;
 float boundB;
@@ -79,7 +79,7 @@ const uint32_t boundaryColors[5] = {0x992099, // pink
 0x209999}; // blue
 int currentBoundaryColor;
 
-#define INITIAL_START_DELAY 5.0f
+#define INITIAL_START_DELAY 6.0f
 #define ROUND_START_DELAY 2.0f
 
 void setup() {
@@ -197,6 +197,8 @@ void goToMainMenu() {
 
 void goToTwoPlayers() {
 	state = TWO_PLAYERS;
+	boundaryChangeColorSpeed = NORMAL_BOUNDARY_CHANGE_COLOR_SPEED;
+	game.changeBallInitialVelocity(physics::vector2d(BALL_INITIAL_SPEED, BALL_INITIAL_SPEED));
 	game.resetScore();
 	game.resetPlayersAndBall();
 	game.deactivatePlayer(2);
@@ -207,6 +209,8 @@ void goToTwoPlayers() {
 
 void goToFourPlayers() {
 	state = FOUR_PLAYERS;
+	boundaryChangeColorSpeed = NORMAL_BOUNDARY_CHANGE_COLOR_SPEED;
+	game.changeBallInitialVelocity(physics::vector2d(BALL_INITIAL_SPEED, BALL_INITIAL_SPEED));
 	game.resetScore();
 	game.resetPlayersAndBall();
 	game.activatePlayer(2);
@@ -249,7 +253,6 @@ void updateMainMenu(float dt) {
 void updateGame(float dt) {
 	if (game.winCondition()) {
 		delay(500);
-		game.resetPlayersAndBall();
 		if (game.getStats().leftScore >= WINNING_SCORE) {
 			drawLeftWinScreen();
 			delay(6000);
@@ -261,7 +264,17 @@ void updateGame(float dt) {
 		} else {
 			game.changeStartDelay(ROUND_START_DELAY);
 			drawScore();
-			delay(3000);
+			if (game.getStats().leftScore == WINNING_SCORE - 1 && game.getStats().leftScore == game.getStats().rightScore) {
+				delay(2000);
+				drawFinalRound();
+				delay(2000);
+				// Increase initial ball speed and boundary change color speed
+				game.changeBallInitialVelocity(physics::vector2d(BALL_FINAL_ROUND_SPEED, BALL_FINAL_ROUND_SPEED));
+				boundaryChangeColorSpeed = FINAL_ROUND_BOUNDARY_CHANGE_COLOR_SPEED;
+			} else {
+				delay(3000);
+			}
+			game.resetPlayersAndBall();
 		} 
 	} else {
 		// Get controller input and convert to player position
@@ -317,11 +330,7 @@ void drawGame(float dt) {
 	// Bounds
 	uint32_t desiredColor = boundaryColors[currentBoundaryColor];
 	
-	// Normal mode
-	//float speed = 5.0f;
-
-	// Japanese game show mode
-	float speed = BOUNDARY_CHANGE_COLOR_SPEED;
+	float speed = boundaryChangeColorSpeed;
 	
 	int hitColor = 0;
 	{
@@ -467,6 +476,14 @@ void drawScore() {
 	draw.number(game.getStats().leftScore, 14, 9);
 	draw.setColor(playerColor[1]);
 	draw.number(game.getStats().rightScore, 34, 9);
+	draw.drawBuffer();
+}
+
+void drawFinalRound() {
+	draw.clearBuffer();
+	draw.setColor(0x400000);
+	draw.string("FINAL", 8, 4);
+	draw.string("ROUND", 8, 14);
 	draw.drawBuffer();
 }
 

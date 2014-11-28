@@ -85,6 +85,7 @@ public:
 	float getStartDelay();
 	bool ballIsPaused();
 	float currentStartTime();
+	void changeBallInitialVelocity(physics::vector2d velocity);
 
 	// For drawing
 	float XpositionOfHorizontalWall(int num);
