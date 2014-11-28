@@ -9,6 +9,9 @@ Game::Game(int _screenWidth, int _screenHeight, int _physicsToPixelRatio) {
 	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		controller[i] = 0;
 	}
+	
+	ballCollidesWithWall = 0;
+	ballCollidesWithPaddle = 0;
 }
 
 void Game::setup(GameSettings _settings) {
@@ -199,6 +202,14 @@ float Game::heightOfPlayer(int num) {
 	return player[num].getPaddle()->getExtents().y * 2.0f;
 }
 
+void Game::setBallCollidesWithWall(void (*_ballCollidesWithWall)()) {
+	ballCollidesWithWall = _ballCollidesWithWall;
+}
+
+void Game::setBallCollidesWithPaddle(void (*_ballCollidesWithPaddle)()) {
+	ballCollidesWithPaddle = _ballCollidesWithPaddle;
+}
+
 void Game::updatePlayers() {
 	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		if (player[i].active && controller[i]) {
@@ -233,6 +244,9 @@ void Game::updatePhysics(float dt) {
 					paddle = player[i].getPaddle();
 					if (physics::movingBoxesCollide(ballDt, *ball.getPhysicsObject(), *paddle->getPhysicsObject(), collisionPositionOfBall, collisionPositionOfPaddle, timeOfCollision)) {
 						collision = true;
+						if (ballCollidesWithPaddle) {
+							ballCollidesWithPaddle();
+						}
 
 						// This is a bug fix so that the ball will never collide with a paddle such that the collision position is around a wall
 						//physics::vector2d pos(player[i].getPaddle()->getPosition().x, physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, ball.getPosition(), ball.getPhysicsObject()->extents).y); unnecessary
@@ -295,8 +309,11 @@ void Game::updatePhysics(float dt) {
 			for (int i = 0; i < NUM_VERTICAL_WALLS; ++i) {
 				if (physics::movingBoxCollidesWithVerticalLine(ballDt, *ball.getPhysicsObject(), *verticalWalls[i].getPhysicsObject(), collisionPositionOfBall, timeOfCollision)) {
 					collision = true;
-
-					ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, verticalWalls[i].getPosition(), verticalWalls[i].getExtents()));
+					if (ballCollidesWithWall) {
+						ballCollidesWithWall();
+					}
+					
+					ball.setPosition(collisionPositionOfBall);
 
 					if (ball.getPosition().x >= verticalWalls[i].getPosition().x) {
 						if (ball.getPhysicsObject()->velocity.x < 0) {
@@ -317,8 +334,13 @@ void Game::updatePhysics(float dt) {
 			for (int i = 0; i < NUM_HORIZONTAL_WALLS; ++i) {
 				if (physics::movingBoxCollidesWithHorizontalLine(ballDt, *ball.getPhysicsObject(), *horizontalWalls[i].getPhysicsObject(), collisionPositionOfBall, timeOfCollision)) {
 					collision = true;
+					if (ballCollidesWithWall) {
+						ballCollidesWithWall();
+					}
 
-					ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, horizontalWalls[i].getPosition(), horizontalWalls[i].getExtents()));
+					// Bug at high speeds. why?
+					//ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, horizontalWalls[i].getPosition(), horizontalWalls[i].getExtents()));
+					ball.setPosition(collisionPositionOfBall);
 
 					if (ball.getPosition().y >= horizontalWalls[i].getPosition().y) {
 						if (ball.getPhysicsObject()->velocity.y < 0) {

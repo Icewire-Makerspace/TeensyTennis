@@ -26,7 +26,7 @@ OctoWS2811Draw draw(&leds, HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION);
 #define PLAYER_MAX_MOVE_SPEED 100.0f
 #define BALL_INITIAL_SPEED 10.0f
 #define BALL_FINAL_ROUND_SPEED 25.0f
-#define BALL_MAX_SPEED 120.0f
+#define BALL_MAX_SPEED 140.0f
 #define BALL_INCREASE_SPEED_INTERVAL 2.5f
 Game game(HORIZONTAL_RESOLUTION, VERTICAL_RESOLUTION, PHYSICS_TO_PIXEL_RATIO);
 
@@ -79,8 +79,11 @@ const uint32_t boundaryColors[5] = {0x992099, // pink
 0x209999}; // blue
 int currentBoundaryColor;
 
-#define INITIAL_START_DELAY 6.0f
+#define INITIAL_START_DELAY 5.0f
 #define ROUND_START_DELAY 2.0f
+
+// Audio
+#define BUZZER_PIN 12
 
 void setup() {
 	// Init display
@@ -136,7 +139,7 @@ void setup() {
 	}
 	
 	// Set up ball
-	settings.ballInitialPoint = physics::vector2d(28, 11);
+	settings.ballInitialPoint = physics::vector2d(26, 11);
 	settings.ballDiameter = 2;
 	settings.ballInitialVelocity = physics::vector2d(BALL_INITIAL_SPEED, BALL_INITIAL_SPEED);
 	settings.ballVelocityIncrease = 1.1f;
@@ -162,8 +165,12 @@ void setup() {
 	game.deactivatePlayer(2);
 	game.deactivatePlayer(3);
 	
+	// Callbacks for audio
+	game.setBallCollidesWithWall(playLowBeep);
+	game.setBallCollidesWithPaddle(playHighBeep);
+	
 	// Button
-	pinMode(buttonPin, INPUT_PULLUP);
+	pinMode(buttonPin, INPUT);
 	attachInterrupt(buttonPin, isrService, FALLING);
 	buttonPressed = false;
 	
@@ -223,7 +230,7 @@ void loop() {
 	// Handle button pressed
 	if (buttonPressed) {
 		// Let's still make sure we don't hit the button more than once at a time
-		delay(1000);
+		delay(600);
 		buttonPressed = false;
 		switch (state) {
 			case MAIN_MENU:
@@ -251,15 +258,16 @@ void updateMainMenu(float dt) {
 
 // Our game loop
 void updateGame(float dt) {
+	// Check whether round was won
 	if (game.winCondition()) {
 		delay(500);
 		if (game.getStats().leftScore >= WINNING_SCORE) {
 			drawLeftWinScreen();
-			delay(6000);
+			delay(5000);
 			goToMainMenu();
 		} else if (game.getStats().rightScore >= WINNING_SCORE) {
 			drawRightWinScreen();
-			delay(6000);
+			delay(5000);
 			goToMainMenu();
 		} else {
 			game.changeStartDelay(ROUND_START_DELAY);
@@ -272,7 +280,7 @@ void updateGame(float dt) {
 				game.changeBallInitialVelocity(physics::vector2d(BALL_FINAL_ROUND_SPEED, BALL_FINAL_ROUND_SPEED));
 				boundaryChangeColorSpeed = FINAL_ROUND_BOUNDARY_CHANGE_COLOR_SPEED;
 			} else {
-				delay(3000);
+				delay(2000);
 			}
 			game.resetPlayersAndBall();
 		} 
@@ -309,12 +317,9 @@ void updateGame(float dt) {
 				controller[i].setSpeed(speed);
 			}
 		}
-
-		// Trick to prevent tunnelling at high speed: simulate four times at 1/4 dt each update
-		game.tick(dt * 0.25f);
-		game.tick(dt * 0.25f);
-		game.tick(dt * 0.25f);
-		game.tick(dt * 0.25f);
+		
+		// Simulate the game
+		game.tick(dt);
 		
 		// Draw the game
 		drawGame(dt);
@@ -438,7 +443,7 @@ void drawGame(float dt) {
 	}
 	
 	if (game.ballIsPaused()) {
-		draw.number((int)(game.getStartDelay() - game.currentStartTime() + 1), 23, 3);
+		draw.number((int)(game.getStartDelay() - game.currentStartTime() + 1), 24, 3);
 	}
 
 	draw.drawBuffer();
@@ -497,4 +502,14 @@ void drawTitle() {
 	draw.setColor(playerColor[0]);
 	draw.string("TENNIS", 4, 17);
 	draw.drawBuffer();
+}
+
+void playLowBeep() {
+	noTone(BUZZER_PIN);
+	tone(BUZZER_PIN, 392, 50);
+}
+
+void playHighBeep() {
+	noTone(BUZZER_PIN);
+	tone(BUZZER_PIN, 784, 50);
 }
