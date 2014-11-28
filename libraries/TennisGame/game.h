@@ -102,6 +102,10 @@ public:
 	float widthOfPlayer(int num);
 	float heightOfPlayer(int num);
 	
+	// Callbacks
+	void setBallCollidesWithWall(void (*_ballCollidesWithWall)());
+	void setBallCollidesWithPaddle(void (*_ballCollidesWithPaddle)());
+	
 private:
 	void updatePlayers();
 	void updatePhysics(float dt);
@@ -118,8 +122,10 @@ private:
 	
 	float startTimer;
 	float ballVelocityIncreaseTimer;
-	
 	bool pauseBall;
+	
+	void (*ballCollidesWithWall)();
+	void (*ballCollidesWithPaddle)();
 };
 
 #endif
