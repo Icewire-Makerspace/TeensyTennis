@@ -50,9 +50,9 @@ unsigned long lastRefresh;
 const float frameRate = 1.0f/60.0f;
 
 // Button
-const int buttonPin = 23;
-const int debounceTime = 20;
-volatile unsigned long lastMicros;
+#define BUTTON_PIN 23
+const int debounceTime = 10000;
+volatile unsigned long lastTime;
 volatile bool buttonPressed;
 
 // States
@@ -170,9 +170,10 @@ void setup() {
 	game.setBallCollidesWithPaddle(playHighBeep);
 	
 	// Button
-	pinMode(buttonPin, INPUT);
-	attachInterrupt(buttonPin, isrService, FALLING);
+	pinMode(BUTTON_PIN, INPUT);
+	lastTime = 0;
 	buttonPressed = false;
+	attachInterrupt(BUTTON_PIN, isrButton, FALLING);
 	
 	// Initial state is main menu
 	goToMainMenu();
@@ -184,17 +185,17 @@ void setup() {
 	currentBoundaryColor = 0;
 }
 
-void isrDebounceService() {
-	cli();
-	if ((long)(micros() - lastMicros) >= debounceTime * 1000) {
-		lastMicros = micros();
-		isrService();
+void isrButton() {
+	noInterrupts();
+	unsigned long time = micros();
+	if (time - lastTime >= debounceTime) {
+		lastTime = time;
+		// Since the IR receiver can pick up some false positives
+		if (digitalRead(BUTTON_PIN) == 0) {
+			buttonPressed = true;
+		}
 	}
-	sei();
-}
-
-void isrService() {
-	buttonPressed = true;
+	interrupts();
 }
 
 void goToMainMenu() {
