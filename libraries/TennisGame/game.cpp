@@ -213,7 +213,7 @@ void Game::setBallCollidesWithPaddle(void (*_ballCollidesWithPaddle)()) {
 void Game::updatePlayers() {
 	for (int i = 0; i < MAX_NUM_PLAYERS; ++i) {
 		if (player[i].active && controller[i]) {
-			player[i].changeSpeedTo(controller[i]->getSpeed());
+			player[i].changeVerticalSpeedTo(controller[i]->getSpeed());
 		}
 	}
 }
@@ -232,6 +232,8 @@ void Game::updatePhysics(float dt) {
 	if (!pauseBall) {
 		bool collision = true;
 		int collisionLoopCount = 0;
+
+		// A value of 3 is sufficient for objects moving at a quick speed, but this should be increased as the collision speed between two objects exceeds the bounds around that collision
 		int maxCollisionLoops = 3;
 
 		while (collision && collisionLoopCount < maxCollisionLoops) {
@@ -248,13 +250,8 @@ void Game::updatePhysics(float dt) {
 							ballCollidesWithPaddle();
 						}
 
-						// This is a bug fix so that the ball will never collide with a paddle such that the collision position is around a wall
-						//physics::vector2d pos(player[i].getPaddle()->getPosition().x, physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, ball.getPosition(), ball.getPhysicsObject()->extents).y); unnecessary
-						physics::vector2d pos(player[i].getPaddle()->getPosition().x, collisionPositionOfPaddle.y);
-						player[i].setPosition(pos);
-						player[i].stop();
-
-						ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, paddle->getPosition(), paddle->getExtents()));
+						player[i].setPosition(collisionPositionOfPaddle);
+						ball.setPosition(collisionPositionOfBall);
 						paddleToBallCollisionPosition = collisionPositionOfBall - collisionPositionOfPaddle;
 				
 						// Traditional physics except just bounce off top of paddle
@@ -264,24 +261,45 @@ void Game::updatePhysics(float dt) {
 						}
 						if (paddleToBallLengthY >= ball.getPhysicsObject()->extents.y + paddle->getPhysicsObject()->extents.y) {
 							if (paddleToBallCollisionPosition.y >= 0) {
+								// This is so the paddle will never shove the ball through another object
+								if (player[i].getPaddle()->getVelocity().y > 0) {
+									player[i].changeVerticalSpeedTo(0);
+								}
+
 								if (ball.getPhysicsObject()->velocity.y < 0) {
 									ball.reverseVelocityY();
 								}
 							} else {
+								// This is so the paddle will never shove the ball through another object
+								if (player[i].getPaddle()->getVelocity().y < 0) {
+									player[i].changeVerticalSpeedTo(0);
+								}
+
 								if (ball.getPhysicsObject()->velocity.y > 0) {
 									ball.reverseVelocityY();
 								}
 							}
 						} else {
 							if (paddleToBallCollisionPosition.x >= 0) {
+								// This is so the paddle will never shove the ball through another object
+								if (player[i].getPaddle()->getVelocity().x > 0) {
+									player[i].changeHorizontalSpeedTo(0);
+								}
+
 								if (ball.getPhysicsObject()->velocity.x < 0) {
 									ball.reverseVelocityX();
 								}
 							} else {
+								// This is so the paddle will never shove the ball through another object
+								if (player[i].getPaddle()->getVelocity().x < 0) {
+									player[i].changeHorizontalSpeedTo(0);
+								}
+
 								if (ball.getPhysicsObject()->velocity.x > 0) {
 									ball.reverseVelocityX();
 								}
 							}
+							// Magic number!
 							ball.setVelocityY(paddleToBallCollisionPosition.y * 11.0f);
 						}
 
@@ -324,7 +342,6 @@ void Game::updatePhysics(float dt) {
 							ball.reverseVelocityX();
 						}
 					}
-					//ball.reverseVelocityX(); TMP remove
 
 					ballDt = ballDt * (1.0f - timeOfCollision);
 				}
@@ -338,8 +355,6 @@ void Game::updatePhysics(float dt) {
 						ballCollidesWithWall();
 					}
 
-					// Bug at high speeds. why?
-					//ball.setPosition(physics::paddedCollisionPosition(collisionPositionOfBall, ball.getPhysicsObject()->extents, horizontalWalls[i].getPosition(), horizontalWalls[i].getExtents()));
 					ball.setPosition(collisionPositionOfBall);
 
 					if (ball.getPosition().y >= horizontalWalls[i].getPosition().y) {
@@ -351,7 +366,6 @@ void Game::updatePhysics(float dt) {
 							ball.reverseVelocityY();
 						}
 					}
-					//ball.reverseVelocityY(); TMP remove
 
 					ballDt = ballDt * (1.0f - timeOfCollision);
 				}
@@ -371,10 +385,42 @@ void Game::updatePhysics(float dt) {
 			paddle = player[i].getPaddle();
 
 			// Horizontal walls
-			for (int j = 0; j < 2; ++j) {
+			for (int j = 0; j < NUM_HORIZONTAL_WALLS; ++j) {
 				if (physics::movingBoxCollidesWithHorizontalLine(dt, *paddle->getPhysicsObject(), *horizontalWalls[j].getPhysicsObject(), collisionPositionOfPaddle, timeOfCollision)) {
+
+					// Since collision with the ball can adjust the paddle's position, we want to make sure the paddle doesn't go through the wall
 					player[i].setPosition(physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, horizontalWalls[j].getPosition(), horizontalWalls[j].getExtents()));
-					player[i].stop();
+
+					// Stop the paddle from entering the wall
+					if (collisionPositionOfPaddle.y >= horizontalWalls[j].getPosition().y) {
+						if (player[i].getPaddle()->getVelocity().y < 0) {
+							player[i].changeVerticalSpeedTo(0);
+						}
+					} else {
+						if (player[i].getPaddle()->getVelocity().y > 0) {
+							player[i].changeVerticalSpeedTo(0);
+						}
+					}
+				}
+			}
+
+			// Vertical walls
+			for (int j = 0; j < NUM_VERTICAL_WALLS; ++j) {
+				if (physics::movingBoxCollidesWithVerticalLine(dt, *paddle->getPhysicsObject(), *verticalWalls[j].getPhysicsObject(), collisionPositionOfPaddle, timeOfCollision)) {
+
+					// Since collision with the ball can adjust the paddle's position, we want to make sure the paddle doesn't go through the wall
+					player[i].setPosition(physics::paddedCollisionPosition(collisionPositionOfPaddle, paddle->getPhysicsObject()->extents, verticalWalls[j].getPosition(), verticalWalls[j].getExtents()));
+
+					// Stop the paddle from entering the wall
+					if (collisionPositionOfPaddle.x >= verticalWalls[j].getPosition().x) {
+						if (player[i].getPaddle()->getVelocity().x < 0) {
+							player[i].changeHorizontalSpeedTo(0);
+						}
+					} else {
+						if (player[i].getPaddle()->getVelocity().x > 0) {
+							player[i].changeHorizontalSpeedTo(0);
+						}
+					}
 				}
 			}
 

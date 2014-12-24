@@ -14,7 +14,8 @@ public:
 	void setPosition(physics::vector2d position);
 
 	// Controls
-	void changeSpeedTo(float speed);
+	void changeVerticalSpeedTo(float speed);
+	void changeHorizontalSpeedTo(float speed);
 	void stop();
 
 	bool active;

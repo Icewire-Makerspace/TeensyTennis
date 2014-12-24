@@ -103,79 +103,27 @@ namespace physics {
 		normalizedTimeOfCollision = tStart;
 		return true;
 	}
-	
-	inline bool boxCollidesWithHorizontalLine(const Box& box, const HorizontalLine& line) {
-		return rectsOverlap(box.position, line.position, box.extents, vector2d(line.extent, 0));
-	}
-
-	inline bool boxCollidesWithVerticalLine(const Box& box, const VerticalLine& line) {
-		return rectsOverlap(box.position, line.position, box.extents, vector2d(0, line.extent));
-	}
 
 	bool movingBoxCollidesWithHorizontalLine(float dt, const MovingBox& box, const HorizontalLine& line, vector2d& collisionPositionOfBox, float& normalizedTimeOfCollision) {
-		// Is there a collision between the objects at their current position?
-		if (boxCollidesWithHorizontalLine(box, line)) {
-			collisionPositionOfBox = box.position;
-			normalizedTimeOfCollision = 0;
-			return true;
-		}
+		// Convert line to box
+		MovingBox lineBox;
+		lineBox.position = line.position;
+		lineBox.extents = vector2d(line.extent, 0.0f);
+		lineBox.velocity = VECTOR2D_ZERO;
 
-		// Displacement
-		vector2d d = VECTOR2D_ZERO - ((box.position + box.velocity * dt) - box.position);
-
-		// Quick check if the box isn't moving
-		if (d.x == 0.0f && d.y == 0.0f) {
-			// Since we already checked if they're currently colliding
-			return false;
-		}
-
-		// Vertices
-		vector2d boxMin = box.position - box.extents;
-		vector2d boxMax = box.position + box.extents;
-		vector2d lineMin(line.position.x - line.extent, line.position.y);
-		vector2d lineMax(line.position.x + line.extent, line.position.y);
-
-		if (sweepOverlap(d, boxMin, boxMax, lineMin, lineMax, normalizedTimeOfCollision)) {
-			// We have a collision!
-			collisionPositionOfBox = box.position + (d * normalizedTimeOfCollision);
-			return true;
-		}
-
-		// No collision
-		return false;
+		vector2d collisionPositionOfLine;
+		return movingBoxesCollide(dt, box, lineBox, collisionPositionOfBox, collisionPositionOfLine, normalizedTimeOfCollision);
 	}
 
 	bool movingBoxCollidesWithVerticalLine(float dt, const MovingBox& box, const VerticalLine& line, vector2d& collisionPositionOfBox, float& normalizedTimeOfCollision) {
-		// Is there a collision between the objects at their current position?
-		if (boxCollidesWithVerticalLine(box, line)) {
-			collisionPositionOfBox = box.position;
-			normalizedTimeOfCollision = 0;
-			return true;
-		}
+		// Convert line to box
+		MovingBox lineBox;
+		lineBox.position = line.position;
+		lineBox.extents = vector2d(0.0f, line.extent);
+		lineBox.velocity = VECTOR2D_ZERO;
 
-		// Displacement
-		vector2d d = VECTOR2D_ZERO - ((box.position + box.velocity * dt) - box.position);
-
-		// Quick check if the box isn't moving
-		if (d.x == 0.0f && d.y == 0.0f) {
-			// Since we already checked if they're currently colliding
-			return false;
-		}
-
-		// Vertices
-		vector2d boxMin = box.position - box.extents;
-		vector2d boxMax = box.position + box.extents;
-		vector2d lineMin(line.position.x, line.position.y - line.extent);
-		vector2d lineMax(line.position.x, line.position.y + line.extent);
-
-		if (sweepOverlap(d, boxMin, boxMax, lineMin, lineMax, normalizedTimeOfCollision)) {
-			// We have a collision!
-			collisionPositionOfBox = box.position + (d * normalizedTimeOfCollision);
-			return true;
-		}
-
-		// No collision
-		return false;
+		vector2d collisionPositionOfLine;
+		return movingBoxesCollide(dt, box, lineBox, collisionPositionOfBox, collisionPositionOfLine, normalizedTimeOfCollision);
 	}
 
 	inline bool boxesCollide(const Box& a, const Box& b) {

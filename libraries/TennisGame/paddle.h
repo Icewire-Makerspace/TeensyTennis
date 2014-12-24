@@ -9,7 +9,10 @@ public:
 	void setPosition(physics::vector2d position);
 	physics::vector2d getPosition() const;
 	physics::vector2d getExtents() const;
-	void setVelocity(float velocity);
+	void setVelocity(physics::vector2d velocity);
+	void setVelocityX(float speed);
+	void setVelocityY(float speed);
+	physics::vector2d getVelocity() const;
 	void updatePhysics(float dt);
 	const physics::MovingBox* getPhysicsObject() const;
 

@@ -9,11 +9,6 @@ void Ball::setup(physics::vector2d p, float diameter, physics::vector2d velocity
 }
 
 void Ball::setPosition(physics::vector2d position) {
-	// tmp debugging
-	if (position.y < 1 || position.y > 23) {
-//		box.velocity.x = 0;
-	}
-
 	box.position = position;
 }
 
@@ -54,12 +49,6 @@ void Ball::increaseVelocity(float mult) {
 }
 
 void Ball::updatePhysics(float dt) {
-	// tmp debugging
-	physics::vector2d position = box.position + box.velocity * dt;
-	if (position.y < 1 || position.y > 23) {
-//		box.velocity.x = 0;
-	}
-
 	box.position += box.velocity * dt;
 }
 

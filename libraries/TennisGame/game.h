@@ -7,7 +7,6 @@
 #include "player.h"
 #include "controller.h"
 #include "physics/math2d.h"
-#include "collision2d.h"
 
 #define NUM_HORIZONTAL_WALLS 2
 #define NUM_VERTICAL_WALLS 4

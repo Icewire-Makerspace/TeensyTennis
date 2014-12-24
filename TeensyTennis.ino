@@ -297,7 +297,6 @@ void updateGame(float dt) {
 				// Now set player's velocity such that he will be in the desired position next tick
 				float currentPositionY = game.getPlayer(i).getPaddle()->getPosition().y;
 				float distance = desiredPositionY - currentPositionY;
-				float speed;
 				
 				// Smooth out low distances
 				if (distance >= 0) {
@@ -314,7 +313,7 @@ void updateGame(float dt) {
 					}
 				}
 				
-				speed = (float)distance / dt;
+				float speed = (float)distance / dt;
 				controller[i].setSpeed(speed);
 			}
 		}

@@ -9,10 +9,6 @@ namespace physics {
 
 	inline bool sweepOverlap(const vector2d& d, const vector2d& aMin, const vector2d& aMax, const vector2d& bMin, const vector2d& bMax, float& normalizedTimeOfCollision);
 
-	inline bool boxCollidesWithHorizontalLine(const Box& box, const HorizontalLine& line);
-
-	inline bool boxCollidesWithVerticalLine(const Box& box, const VerticalLine& line);
-
 	bool movingBoxCollidesWithHorizontalLine(float dt, const MovingBox& box, const HorizontalLine& line, vector2d& collisionPositionOfBox, float& normalizedTimeOfCollision);
 
 	bool movingBoxCollidesWithVerticalLine(float dt, const MovingBox& box, const VerticalLine& line, vector2d& collisionPositionOfBox, float& normalizedTimeOfCollision);

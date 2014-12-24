@@ -20,8 +20,21 @@ physics::vector2d Paddle::getExtents() const {
 	return box.extents;
 }
 
-void Paddle::setVelocity(float velocity) {
-	box.velocity.y = velocity;
+void Paddle::setVelocity(physics::vector2d velocity) {
+	box.velocity.x = velocity.x;
+	box.velocity.y = velocity.y;
+}
+
+void Paddle::setVelocityX(float speed) {
+	box.velocity.x = speed;
+}
+
+void Paddle::setVelocityY(float speed) {
+	box.velocity.y = speed;
+}
+
+physics::vector2d Paddle::getVelocity() const {
+	return box.velocity;
 }
 
 void Paddle::updatePhysics(float dt) {

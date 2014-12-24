@@ -17,16 +17,26 @@ void Player::setPosition(physics::vector2d position) {
 	paddle->setPosition(position);
 }
 
-void Player::changeSpeedTo(float speed) {
+void Player::changeVerticalSpeedTo(float speed) {
 	if (speed > maxMovementSpeed) {
 		speed = maxMovementSpeed;
 	} else if (speed < -maxMovementSpeed) {
 		speed = -maxMovementSpeed;
 	}
 	
-	paddle->setVelocity(speed);
+	paddle->setVelocityY(speed);
+}
+
+void Player::changeHorizontalSpeedTo(float speed) {
+	if (speed > maxMovementSpeed) {
+		speed = maxMovementSpeed;
+	} else if (speed < -maxMovementSpeed) {
+		speed = -maxMovementSpeed;
+	}
+
+	paddle->setVelocityX(speed);
 }
 
 void Player::stop() {
-	paddle->setVelocity(0);
+	paddle->setVelocity(physics::VECTOR2D_ZERO);
 }

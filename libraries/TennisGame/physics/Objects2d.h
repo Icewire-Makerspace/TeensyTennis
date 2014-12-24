@@ -1,7 +1,7 @@
 #ifndef OBJECTS2D_H
 #define OBJECTS2D_H
 
-#include "Math2d.h"
+#include "math2d.h"
 
 namespace physics {
 
